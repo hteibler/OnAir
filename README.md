@@ -11,7 +11,7 @@ active and publishes a message via MQTT whenever that state changes.
 - Icon shows a disabled state when the MQTT broker is unreachable
 - Single click on the icon toggles the whole function on / off
 - Configuration window: MQTT URL / user / password / topic, trigger toggles,
-  polling interval
+  polling interval, launch-at-login toggle
 
 ## MQTT payload
 
