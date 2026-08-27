@@ -4,16 +4,16 @@ Task checklist. Requirements live in SPEC.md; current milestone lives in CONTEXT
 Key decisions are in SPEC.md "## decided".
 
 ## Repo setup
-- [ ] `git init` + `.gitignore` (Swift / Xcode / macOS)
-- [ ] `.gitignore` also excludes SPEC.md, CLAUDE.md, CONTEXT.md
-- [ ] Create private GitHub repo "OnAir" via `gh` (go public after finishing)
-- [ ] README.md
+- [x] `git init` + `.gitignore` (Swift / Xcode / macOS)
+- [x] `.gitignore` also excludes SPEC.md, CLAUDE.md, CONTEXT.md
+- [x] Create private GitHub repo "OnAir" via `gh` (go public after finishing) — https://github.com/hteibler/OnAir
+- [x] README.md
 
 ## App scaffold
-- [ ] Xcode project — SwiftUI menu bar (agent) app, `LSUIElement`, no Dock icon, macOS 26.x target
-- [ ] Version bump by 0.1 on every build (build phase script)
-- [ ] App icon symbolizing "OnAir"
-- [ ] `NSStatusItem` icon with states: idle / camera / mic / both / disabled (MQTT unreachable)
+- [x] Xcode project (XcodeGen `project.yml`) — SwiftUI menu bar (agent) app, `LSUIElement`, no Dock icon, macOS 26.x target
+- [x] Version bump by 0.1 build-phase script (Release configuration only, to avoid dev churn)
+- [ ] App icon symbolizing "OnAir" (empty AppIcon set for now)
+- [ ] `NSStatusItem` icon with states: idle / camera / mic / both / disabled (MQTT unreachable) — basic icon + Configure…/Quit menu done
 - [ ] Single click on the status icon toggles the whole function on/off
 
 ## Device state detection
