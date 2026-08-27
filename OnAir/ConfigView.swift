@@ -1,46 +1,32 @@
 import SwiftUI
 
 struct ConfigView: View {
-    @State private var settings: AppSettings
-    private let onApply: (AppSettings) -> Void
-    private let onCommit: () -> Void
-    private let onClose: () -> Void
-
-    init(
-        settings: AppSettings,
-        onApply: @escaping (AppSettings) -> Void,
-        onCommit: @escaping () -> Void,
-        onClose: @escaping () -> Void
-    ) {
-        _settings = State(initialValue: settings)
-        self.onApply = onApply
-        self.onCommit = onCommit
-        self.onClose = onClose
-    }
+    @Bindable var model: SettingsModel
+    let onClose: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
             Form {
                 Section("MQTT") {
-                    TextField("URL", text: $settings.mqtt.url, prompt: Text("mqtt://broker.example:1883"))
-                    TextField("User", text: $settings.mqtt.username)
-                    SecureField("Password", text: $settings.mqtt.password)
-                    TextField("Topic", text: $settings.mqtt.topic, prompt: Text("/macbook/onair"))
+                    TextField("URL", text: $model.settings.mqtt.url, prompt: Text("mqtt://broker.example:1883"))
+                    TextField("User", text: $model.settings.mqtt.username)
+                    SecureField("Password", text: $model.settings.mqtt.password)
+                    TextField("Topic", text: $model.settings.mqtt.topic, prompt: Text("/macbook/onair"))
                 }
                 Section("Triggers") {
-                    Toggle("Camera", isOn: $settings.cameraTrigger)
-                    Toggle("Microphone", isOn: $settings.micTrigger)
+                    Toggle("Camera", isOn: $model.settings.cameraTrigger)
+                    Toggle("Microphone", isOn: $model.settings.micTrigger)
                 }
                 Section("Polling") {
                     Stepper(
-                        "Interval: \(Int(settings.pollInterval)) s",
-                        value: $settings.pollInterval,
+                        "Interval: \(Int(model.settings.pollInterval)) s",
+                        value: $model.settings.pollInterval,
                         in: 1...60,
                         step: 1
                     )
                 }
                 Section("General") {
-                    Toggle("Launch at login", isOn: $settings.launchAtLogin)
+                    Toggle("Launch at login", isOn: $model.settings.launchAtLogin)
                 }
             }
             .formStyle(.grouped)
@@ -65,8 +51,6 @@ struct ConfigView: View {
             .padding(16)
         }
         .frame(width: 420, height: 640)
-        .onChange(of: settings) { _, new in onApply(new) }
-        .onDisappear(perform: onCommit)
     }
 
     private static var versionLine: String {

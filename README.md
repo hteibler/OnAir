@@ -52,8 +52,12 @@ Changes apply on close; the MQTT connection reconnects if the broker settings
 changed.
 
 MQTT URL / username / topic and the trigger/poll settings persist in
-`UserDefaults` (`at.teibler.OnAir`); the password is stored in the Keychain;
-launch-at-login uses `SMAppService`.
+`UserDefaults` (`at.teibler.OnAir`); launch-at-login uses `SMAppService`.
+
+The password is stored in the data-protection Keychain. Ad-hoc-signed dev
+builds can't write that Keychain, so they fall back to a plaintext
+`UserDefaults` value; a Developer ID / notarized build uses the Keychain
+properly.
 
 Release builds bump `CFBundleShortVersionString` by 0.1 automatically.
 

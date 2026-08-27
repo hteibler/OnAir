@@ -13,10 +13,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private let monitor = DeviceStateMonitor()
     private let publisher = MQTTPublisher()
-    private var settings = SettingsStore.load()
+    private let settingsModel = SettingsModel(AppSettings())
     private var lastConnectedMQTT: MQTTSettings?
 
+    private var settings: AppSettings { settingsModel.settings }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Loaded here (not in a stored-property initializer) so Keychain /
+        // SMAppService calls never run before the app is up.
+        settingsModel.settings = SettingsStore.load()
+
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.action = #selector(statusItemClicked)
         statusItem.button?.target = self
@@ -100,11 +106,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Settings
 
-    private func applySettings(_ new: AppSettings) {
-        settings = new
-        SettingsStore.save(new)
-        monitor.setPollInterval(new.pollInterval)
-        applyLaunchAtLogin(new.launchAtLogin)
+    /// Applies the current settings model. Called when the config window closes.
+    private func applySettings() {
+        SettingsStore.save(settings)
+        monitor.setPollInterval(settings.pollInterval)
+        applyLaunchAtLogin(settings.launchAtLogin)
+        reconnectMQTT()
         updateStatusIcon()
     }
 
@@ -118,7 +125,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         } catch {
             log.error("launch-at-login \(enabled, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
-            settings.launchAtLogin = service.status == .enabled
+            settingsModel.settings.launchAtLogin = service.status == .enabled
         }
     }
 
@@ -178,14 +185,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let view = ConfigView(
-            settings: settings,
-            onApply: { [weak self] new in self?.applySettings(new) },
-            onCommit: { [weak self] in self?.reconnectMQTT() },
+            model: settingsModel,
             onClose: { [weak self] in self?.configWindow?.close() }
         )
+        window.delegate = self
         window.contentViewController = NSHostingController(rootView: view)
 
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
+    }
+}
+
+extension AppDelegate: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        applySettings()
     }
 }
