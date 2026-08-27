@@ -1,0 +1,33 @@
+name: OnAir
+options:
+  bundleIdPrefix: at.teibler
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  OnAir:
+    type: application
+    platform: macOS
+    sources:
+      - path: OnAir
+    settings:
+      base:
+        INFOPLIST_FILE: OnAir/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: at.teibler.OnAir
+        PRODUCT_NAME: OnAir
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_HARDENED_RUNTIME: YES
+        COMBINE_HIDPI_IMAGES: YES
+    preBuildScripts:
+      - path: OnAir/Scripts/bump-version.sh
+        name: "Bump version (+0.1)"
+        basedOnDependencyAnalysis: false

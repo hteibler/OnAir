@@ -1,0 +1,26 @@
+# Local planning docs — not synced
+SPEC.md
+CLAUDE.md
+CONTEXT.md
+
+# Xcode / generated project
+*.xcodeproj
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+.build/
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+
+# macOS
+.DS_Store
+
+# Secrets
+*.p12
+*.mobileprovision
+ExportOptions.plist
