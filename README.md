@@ -38,16 +38,16 @@ xcodebuild -project OnAir.xcodeproj -scheme OnAir build
 `OnAir.xcodeproj` is generated from `project.yml` and is not checked in.
 Swift Package dependencies (`emqx/swift-mqtt`) resolve automatically on first build.
 
-## Configuration storage
+## Configuration
 
-MQTT URL / username / topic are stored in `UserDefaults` (`at.teibler.OnAir`);
-the password is stored in the Keychain. The configuration window is not built
-yet — set values manually for now, e.g.:
+Open **Configure…** from the menu bar. Settings: MQTT URL / user / password /
+topic, camera & mic trigger toggles, polling interval, and launch-at-login.
+Changes apply on close; the MQTT connection reconnects if the broker settings
+changed.
 
-```bash
-defaults write at.teibler.OnAir mqtt.url "mqtt://broker.example:1883"
-defaults write at.teibler.OnAir mqtt.topic "/macbook/onair"
-```
+MQTT URL / username / topic and the trigger/poll settings persist in
+`UserDefaults` (`at.teibler.OnAir`); the password is stored in the Keychain;
+launch-at-login uses `SMAppService`.
 
 Release builds bump `CFBundleShortVersionString` by 0.1 automatically.
 

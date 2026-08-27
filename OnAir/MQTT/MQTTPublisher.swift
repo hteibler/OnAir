@@ -6,11 +6,13 @@ private let log = Logger(subsystem: "at.teibler.OnAir", category: "mqtt")
 
 /// Wraps an `MQTTClient.V5` and publishes camera / mic state changes.
 ///
-/// All methods and the `onConnectionChange` callback are used on the main
-/// thread only: `connect` / `disconnect` / `publish` are called from
-/// `AppDelegate`, and the client's `delegateQueue` is set to `.main`.
-final class MQTTPublisher: NSObject, @unchecked Sendable {
-    /// Called on the main thread when the connected state changes.
+/// All methods and the `onConnectionChange` callback run on the main actor:
+/// `connect` / `disconnect` / `publish` are called from `AppDelegate`, and the
+/// client's `delegateQueue` is set to `.main`, so the `nonisolated` delegate
+/// callbacks can safely assume main-actor isolation.
+@MainActor
+final class MQTTPublisher: NSObject {
+    /// Called when the connected state changes.
     var onConnectionChange: ((Bool) -> Void)?
     private(set) var isConnected = false
 
@@ -73,13 +75,13 @@ final class MQTTPublisher: NSObject, @unchecked Sendable {
 }
 
 extension MQTTPublisher: MQTTDelegate {
-    func mqtt(_ mqtt: MQTTClient, didUpdate status: Status, prev: Status) {
-        setConnected(status == .opened)
+    nonisolated func mqtt(_ mqtt: MQTTClient, didUpdate status: Status, prev: Status) {
+        MainActor.assumeIsolated { setConnected(status == .opened) }
     }
 
-    func mqtt(_ mqtt: MQTTClient, didReceive message: Message) {}
+    nonisolated func mqtt(_ mqtt: MQTTClient, didReceive message: Message) {}
 
-    func mqtt(_ mqtt: MQTTClient, didReceive error: any Error) {
+    nonisolated func mqtt(_ mqtt: MQTTClient, didReceive error: any Error) {
         log.error("client error: \(String(describing: error), privacy: .public)")
     }
 }

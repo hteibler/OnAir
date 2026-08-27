@@ -9,6 +9,7 @@ struct DeviceState: Equatable {
 
 /// Polls the camera and microphone state on a fixed interval and invokes
 /// `onChange` once per transition. Polling only runs while `isEnabled` is true.
+@MainActor
 final class DeviceStateMonitor {
     private(set) var state: DeviceState = .inactive
     private(set) var pollInterval: TimeInterval
@@ -28,7 +29,7 @@ final class DeviceStateMonitor {
         guard timer == nil else { return }
         poll()
         let timer = Timer(timeInterval: pollInterval, repeats: true) { [weak self] _ in
-            self?.poll()
+            MainActor.assumeIsolated { self?.poll() }
         }
         timer.tolerance = pollInterval * 0.2
         RunLoop.main.add(timer, forMode: .common)
