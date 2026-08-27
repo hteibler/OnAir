@@ -5,6 +5,11 @@ options:
     macOS: "26.0"
   createIntermediateGroups: true
 
+packages:
+  swift-mqtt:
+    url: https://github.com/emqx/swift-mqtt
+    from: "1.5.2"
+
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -19,6 +24,9 @@ targets:
     platform: macOS
     sources:
       - path: OnAir
+    dependencies:
+      - package: swift-mqtt
+        product: MQTT
     settings:
       base:
         INFOPLIST_FILE: OnAir/Info.plist
