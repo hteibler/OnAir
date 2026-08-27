@@ -42,7 +42,9 @@ final class MQTTPublisher: NSObject {
             password: settings.password.isEmpty ? nil : settings.password
         )
         log.notice("connecting to \(settings.url, privacy: .public)")
-        client.open(identity)
+        client.open(identity).catch { error in
+            log.error("connect failed: \(String(describing: error), privacy: .public)")
+        }
     }
 
     func disconnect() {
@@ -76,6 +78,11 @@ final class MQTTPublisher: NSObject {
 
 extension MQTTPublisher: MQTTDelegate {
     nonisolated func mqtt(_ mqtt: MQTTClient, didUpdate status: Status, prev: Status) {
+        if case .closed(let reason?) = status {
+            log.notice("connection closed: \(reason.description, privacy: .public)")
+        } else {
+            log.notice("connection \(status.description, privacy: .public)")
+        }
         MainActor.assumeIsolated { setConnected(status == .opened) }
     }
 
