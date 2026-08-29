@@ -1,26 +1,32 @@
 # OnAir
 
-A native macOS menu bar app that watches whether the camera or microphone is
-active and publishes a message via MQTT whenever that state changes.
+Version 1.1 · a native macOS menu bar app that watches whether the camera or
+microphone is active and publishes a message via MQTT whenever that state changes.
 
 ## Features
 
 - Lives in the menu bar (`NSStatusItem`), no Dock icon
 - Detects camera / microphone activity by polling (interval configurable, default 3 s)
-- Publishes separate camera / mic events to one MQTT topic, QoS 0, retained
-- Icon shows a disabled state when the MQTT broker is unreachable
-- Single click on the icon toggles the whole function on / off
-- Configuration window: MQTT URL / user / password / topic, trigger toggles,
-  polling interval, launch-at-login toggle
+- Publishes camera, mic and app-lifecycle events to one MQTT topic, QoS 0, retained
+- Icon states: idle · camera active · mic active · paused · MQTT unreachable
+- Left click toggles monitoring on/off; right click opens the menu
+- Auto-reconnects to the broker (network monitor + exponential retry)
+- Configuration window: MQTT URL / user / password / topic, camera & mic trigger
+  toggles, polling interval, launch-at-login
 
 ## MQTT payload
 
-Published to the configured base topic, e.g. `/macbook/onair`:
+All messages go to the configured topic (e.g. `/macbook/onair`), QoS 0, retained.
 
 ```json
-{"camera": "on", "timestamp": 1724762400}
-{"mic": "off", "timestamp": 1724762400}
+{"camera": "on",  "timestamp": 1724762400}
+{"mic":    "off", "timestamp": 1724762400}
+{"app":    "start", "timestamp": 1724762400}
 ```
+
+- `camera` / `mic` — on each state change (only for enabled triggers)
+- `app`: `"start"` on launch and on wake from sleep; `"on"` / `"off"` on the
+  menu-bar toggle
 
 ## Requirements
 
@@ -48,8 +54,9 @@ swift Tools/make-icon.swift OnAir/Assets.xcassets/AppIcon.appiconset
 
 Open **Configure…** from the menu bar. Settings: MQTT URL / user / password /
 topic, camera & mic trigger toggles, polling interval, and launch-at-login.
-Changes apply on close; the MQTT connection reconnects if the broker settings
-changed.
+Every edit is saved immediately; closing the window applies the side effects
+(poll interval, launch-at-login, and an MQTT reconnect if the broker settings
+changed).
 
 MQTT URL / username / topic and the trigger/poll settings persist in
 `UserDefaults` (`at.teibler.OnAir`); launch-at-login uses `SMAppService`.
