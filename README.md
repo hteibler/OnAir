@@ -66,7 +66,32 @@ builds can't write that Keychain, so they fall back to a plaintext
 `UserDefaults` value; a Developer ID / notarized build uses the Keychain
 properly.
 
-Release builds bump `CFBundleShortVersionString` by 0.1 automatically.
+Release builds bump `CFBundleShortVersionString` by 0.1 automatically
+(this rewrites `OnAir/Info.plist` — commit the bump when cutting a release).
+
+## Notarization
+
+Release builds sign with **Developer ID Application** (hardened runtime, secure
+timestamp, no `get-task-allow`); Debug builds stay ad-hoc so they work without
+the certificate.
+
+One-time: store notary credentials in the keychain —
+
+```bash
+xcrun notarytool store-credentials OnAir-notary \
+    --key ~/private_keys/AuthKey_XXXX.p8 --key-id XXXX --issuer <issuer-uuid>
+```
+
+Then archive, notarize and staple:
+
+```bash
+Scripts/notarize.sh
+```
+
+The MQTT password uses the data-protection Keychain, which needs a
+`keychain-access-groups` entitlement to write; without it (current build) the
+password persists via a plaintext `UserDefaults` fallback even in the notarized
+app.
 
 ## License
 
