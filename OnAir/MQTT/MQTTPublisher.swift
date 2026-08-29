@@ -55,12 +55,14 @@ final class MQTTPublisher: NSObject {
         setConnected(false)
     }
 
-    func publish(camera isOn: Bool) { publish(key: "camera", isOn: isOn) }
-    func publish(mic isOn: Bool) { publish(key: "mic", isOn: isOn) }
+    func publish(camera isOn: Bool) { publish("camera", isOn ? "on" : "off") }
+    func publish(mic isOn: Bool) { publish("mic", isOn ? "on" : "off") }
+    /// App lifecycle event: "start" (launch / wake), "on" / "off" (master toggle).
+    func publish(app event: String) { publish("app", event) }
 
-    private func publish(key: String, isOn: Bool) {
+    private func publish(_ key: String, _ value: String) {
         guard let client, !topic.isEmpty else { return }
-        let payload = "{\"\(key)\":\"\(isOn ? "on" : "off")\",\"timestamp\":\(Int(Date().timeIntervalSince1970))}"
+        let payload = "{\"\(key)\":\"\(value)\",\"timestamp\":\(Int(Date().timeIntervalSince1970))}"
         client.publish(to: topic, payload: payload, qos: .atMostOnce, retain: true)
         log.notice("published \(payload, privacy: .public)")
     }

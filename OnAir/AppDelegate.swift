@@ -15,6 +15,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let publisher = MQTTPublisher()
     private let settingsModel = SettingsModel(AppSettings())
     private var lastConnectedMQTT: MQTTSettings?
+    /// App event ("start") to publish once the MQTT connection opens.
+    private var pendingAppEvent: String?
 
     private var settings: AppSettings { settingsModel.settings }
 
@@ -49,6 +51,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         publisher.onConnectionChange = { [weak self] connected in
             guard let self else { return }
             if connected {
+                if let event = self.pendingAppEvent {
+                    self.publisher.publish(app: event)
+                    self.pendingAppEvent = nil
+                }
                 // Refresh the retained topic so it reflects reality after a restart.
                 if self.settings.cameraTrigger { self.publisher.publish(camera: self.monitor.state.camera) }
                 if self.settings.micTrigger { self.publisher.publish(mic: self.monitor.state.microphone) }
@@ -56,10 +62,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.updateStatusIcon()
         }
 
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self, selector: #selector(systemDidWake),
+            name: NSWorkspace.didWakeNotification, object: nil
+        )
+
         monitor.setPollInterval(settings.pollInterval)
         monitor.start()
+        pendingAppEvent = "start"
         connectMQTT()
         updateStatusIcon()
+    }
+
+    @objc private func systemDidWake() {
+        guard settings.mqtt.isConfigured else { return }
+        if publisher.isConnected {
+            publisher.publish(app: "start")
+        } else {
+            pendingAppEvent = "start"
+        }
     }
 
     // MARK: - Status item
@@ -76,12 +97,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func toggleEnabled() {
         if monitor.isEnabled {
+            publisher.publish(app: "off")
             monitor.stop()
-            publisher.disconnect()
-            lastConnectedMQTT = nil
         } else {
+            publisher.publish(app: "on")
             monitor.start()
-            connectMQTT()
         }
         updateStatusIcon()
     }
@@ -89,8 +109,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - MQTT
 
     private func connectMQTT() {
-        guard monitor.isEnabled, settings.mqtt.isConfigured else {
-            log.notice("MQTT not configured or paused — skipping connect")
+        guard settings.mqtt.isConfigured else {
+            log.notice("MQTT not configured — skipping connect")
             return
         }
         publisher.connect(settings.mqtt)
