@@ -1,6 +1,6 @@
 # OnAir
 
-Version 1.1 · a native macOS menu bar app that watches whether the camera or
+Version 1.2 · a native macOS menu bar app that watches whether the camera or
 microphone is active and publishes a message via MQTT whenever that state changes.
 
 ## Features
