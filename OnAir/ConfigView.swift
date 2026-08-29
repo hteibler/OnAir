@@ -51,6 +51,11 @@ struct ConfigView: View {
             .padding(16)
         }
         .frame(width: 420, height: 640)
+        .onChange(of: model.settings) { _, new in
+            // Persist on every edit; AppDelegate applies side effects (poll
+            // interval, launch-at-login, MQTT reconnect) when the window closes.
+            SettingsStore.save(new)
+        }
     }
 
     private static var versionLine: String {

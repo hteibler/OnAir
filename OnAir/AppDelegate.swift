@@ -217,7 +217,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 extension AppDelegate: NSWindowDelegate {
-    func windowWillClose(_ notification: Notification) {
+    @objc func windowWillClose(_ notification: Notification) {
         applySettings()
     }
 }
