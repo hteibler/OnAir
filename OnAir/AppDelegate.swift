@@ -90,6 +90,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
             statusItem.menu = nil
+        } else if settings.mqtt.isConfigured && !publisher.isConnected {
+            connectMQTT()
+            updateStatusIcon()
         } else {
             toggleEnabled()
         }
